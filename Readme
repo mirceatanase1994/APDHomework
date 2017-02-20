@@ -1,0 +1,56 @@
+							Readme pentru Tema 3 Algoritmi Paraleli si Distribuiti
+										Tanase Mircea Adrian, 335CB
+											10 ianuarie 2017
+
+
+	In algoritmul folosit pentru implementarea functionalitatilor temei se disting 2 parti majore:
+	-partea de aflare a topologiei si implicit a arborelui de acoperire, unde am folosit algoritmul implementat in laboratorul 10
+	-partea de prelucrare propriu-zisa a imaginilor (se aplica pentru fiecare imagine), care la randul ei poate fi impartita in
+		-impartirea liniilor catre fii de catre radacina si nodurile intermediare
+		-aplicarea filtrelor pe blocuri de catre frunze
+		-colectarea si asamblarea rezultatelor de catre radacina si nodurile intermediare
+		-crearea statisticilor si colectarea acestora de catre radacina.
+
+	Prima parte se bazeaza pe urmatoarea gandire:
+	-radacina trimite un mesaj sonda catre toti vecinii sai
+	-fiecare nod care nu e radacina asteapta un mesaj sonda, marcheaza ca parinte nodul de la care a primit mesajul si trimite
+	 la randul sau sonde catre toti vecinii ei. Apoi asteapta raspunsuri de la toti vecinii, raspunsurile fiind diferentiate dupa tag
+	 in doua tipuri:
+	 	-tag-ul 2: vecinul este fiu, deci este marcat ca atare
+	 	-tag-ul 1: vecinul nu este conectat in arborele de acoperire cu nodul curent, deci se face doar sau logic intre topologii
+	 	Apoi fiecare nod intermediar face sau logic intre topologiile primite de la toti fiii sai si le trimite parintelui (daca nu
+	 	are fii trimite doar propria topologie).
+	 	In final, nu numai ca radacina afla intreaga topologie, dar fiecare nod isi cunoaste fiii, respectiv parintele in arborele de
+	 	acoperire.
+
+	 A doua parte are la baza urmatorul algoritm:
+	 -radacina si fiecare nod intermediar impart liniile dupa precizarile din enunt si trimit fiecarui fiu blocul de linii care ii
+	  corespunde.
+	 -o precizare importanta este aceea ca, pe tot parcursul acestei parti, inainte de trimiterea blocului propriuzis din imagine
+	  (zona continua de memorie), se trimite un mesaj cu dimensiunile blocului ce urmeaza a fi trimis, astfel incat receiver-ul
+	  sa poata sa aloce memorie si sa interpreteze corect blocul primit.
+	 -frunzele primesc blocul care le este alocat si aplica filtrele, indicate in tag-ul mesajului, dupa care trimit rezultatele in sus,
+	  dupa acelasi model din precizarea de mai sus.
+	 -nodurile intermediare si radacina primesc de la fiecare fiu rezultatele prelucrarii si le asambleaza, ajutand-se de faptul ca
+	  s-a pastrat o mapare a liniilor trimise fiecarui fiu. Radacina scrie de asemenea rezultatul in fisierul de iesire corespunzator
+	  imaginii curente.
+	 -radacina repeta primul pas pentru fiecare imagine, dupa care trimite un mesaj cu un tag final, care e distribuit de toate
+	  nodurile intermediare si anunta inceperea colectarii statisticilor.
+	 -Cand un nod primeste tag-ul final, colecteaza statisticile de la toti fiii (statisticile vin sub forma de doua mesaje:
+	  un mesaj cu o dimensiune a statisticii, si unul cu statistica propriu-zisa, un vector ce contine o mapare nod:linii procesate),
+	  le asambleaza intr-un vector si adauga numarul de linii procesate propriu, dupa care le trimite catre parinte
+	 -radacina asambleaza statistica finala si o scrie in fisier.
+
+	 O particularitate ar fi aceea ca atunci cand un nod nu primeste linii de procesat, este anuntat de acest lucru si isi anunta la
+	 randul sau toti fiii.
+
+	 Mentionez ca la majoritatea rularilor, programul meu calculeaza o statistica diferita de cea publicata o data cu testele, acest lucru
+datorandu-se in primul rand faptului ca, in general, construieste un arbore de acoperire diferit. Dar suma numarului de linii procesate
+este aceeasi, iar arborele de acoperire construit este corect (pentru claritate, il afisez in stdout), ceea ce imi inidca faptul ca,
+in opinia mea, am lucrat corect.
+	De asemenea, dupa make build, executabilul se numeste filtru si poate fi rulat dupa conventia din enunt.
+	Din punctul meu de vedere, nu ar trebui sa apara alte probleme.
+
+
+	Tanase Mircea Adrian,
+	335CB
